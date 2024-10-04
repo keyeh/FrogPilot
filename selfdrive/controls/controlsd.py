@@ -798,18 +798,20 @@ class Controls:
     hudControl.leadVisible = self.sm['longitudinalPlan'].hasLead
     hudControl.leadDistanceBars = self.personality + 1
 
-    hudControl.rightLaneVisible = True
-    hudControl.leftLaneVisible = True
+    hudControl.rightLaneVisible = right_lane_visible = False
+    hudControl.leftLaneVisible = left_lane_visible = False
 
     recent_blinker = (self.sm.frame - self.last_blinker_frame) * DT_CTRL < 5.0  # 5s blinker cooldown
     ldw_allowed = self.is_ldw_enabled and CS.vEgo > LDW_MIN_SPEED and not recent_blinker \
                   and not CC.latActive and self.sm['liveCalibration'].calStatus == log.LiveCalibrationData.Status.calibrated
 
     model_v2 = self.sm['modelV2']
+    if len(model_v2.laneLineProbs) > 2:
+      hudControl.rightLaneVisible = right_lane_visible = model_v2.laneLineProbs[2] > 0.5
+      hudControl.leftLaneVisible = left_lane_visible = model_v2.laneLineProbs[1] > 0.5
+
     desire_prediction = model_v2.meta.desirePrediction
     if len(desire_prediction) and ldw_allowed:
-      right_lane_visible = model_v2.laneLineProbs[2] > 0.5
-      left_lane_visible = model_v2.laneLineProbs[1] > 0.5
       l_lane_change_prob = desire_prediction[Desire.laneChangeLeft]
       r_lane_change_prob = desire_prediction[Desire.laneChangeRight]
 
