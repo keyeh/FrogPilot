@@ -1,0 +1,89 @@
+name: Update RexPilot with latest FrogPilot
+
+on:
+  schedule:
+    - cron: "0 12 * * *" # Trigger daily at noon UTC
+  workflow_dispatch: # Allows manual triggering
+
+jobs:
+  rebase:
+    runs-on: ubuntu-latest
+    env:
+      UPSTREAM_BRANCH: FrogPilot
+      TEMP_BRANCH: temp
+
+    steps:
+      - name: Set up Git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Checkout current branch
+        uses: actions/checkout@v3
+        with:
+          ref: RexPilot # Checkout RexPilot branch
+          fetch-depth: 0 # Fetch all history to identify divergence point
+
+      - name: Fetch upstream branch
+        run: |
+          git remote add upstream https://github.com/FrogAi/FrogPilot.git
+          git fetch upstream $UPSTREAM_BRANCH
+
+      - name: Get second latest commit from upstream branch
+        id: get_commit
+        run: |
+          SECOND_LATEST_COMMIT=$(git log upstream/$UPSTREAM_BRANCH --pretty=format:'%H' -n 2 | tail -n 1)
+          echo "Second latest commit: $SECOND_LATEST_COMMIT"
+          echo "commit=$SECOND_LATEST_COMMIT" >> $GITHUB_ENV
+
+      - name: Find the common ancestor between RexPilot and upstream branch
+        id: find_merge_base
+        run: |
+          MERGE_BASE=$(git merge-base RexPilot upstream/$UPSTREAM_BRANCH)
+          echo "Common ancestor commit: $MERGE_BASE"
+          echo "merge_base=$MERGE_BASE" >> $GITHUB_ENV
+
+      - name: Exit if common ancestor is already up to date with second latest commit
+        run: |
+          if [ "${{ env.commit }}" = "${{ env.merge_base }}" ]; then
+            echo "No new changes. Skipping further steps."
+            echo "skip=true" >> $GITHUB_ENV
+          else
+            echo "skip=false" >> $GITHUB_ENV
+          fi
+
+      - name: Checkout second latest commit from upstream branch
+        if: env.skip == 'false'
+        run: |
+          git checkout -b $TEMP_BRANCH ${{ env.commit }}
+
+      - name: Find the first commit by RexPilot's author
+        if: env.skip == 'false'
+        run: |
+          AUTHOR=$(git log -1 --pretty=format:'%ae' RexPilot)
+          echo "Author of latest commit: $AUTHOR"
+          # Find the first commit by this author in reverse order
+          FIRST_COMMIT=$(git log RexPilot --reverse --author="$AUTHOR" --pretty=format:'%H' | head -n 1)
+          FIRST_COMMIT=$(git rev-parse $FIRST_COMMIT^)
+          echo "first_commit=$FIRST_COMMIT" >> $GITHUB_ENV
+          echo "Parent of first commit by author: $FIRST_COMMIT"
+
+      - name: Cherry-pick commits from the first author commit to the latest one
+        id: cherry
+        if: env.skip == 'false'
+        continue-on-error: true
+        run: |
+          git cherry-pick ${{ env.first_commit }}...RexPilot
+
+      - name: Resolve conflicts in README.md by keeping RexPilot's version
+        if: env.skip == 'false' && steps.cherry.outcome != 'success'
+        run: |
+          git checkout --theirs README.md  # Keep RexPilot's version of README.md
+          git add README.md  # Mark README.md as resolved
+          git commit --no-edit --allow-empty  # Commit the resolved merge automatically
+          git cherry-pick --continue
+
+      - name: Force-push to RexPilot
+        if: env.skip == 'false'
+        run: |
+          git push --force origin $TEMP_BRANCH:RexPilot
