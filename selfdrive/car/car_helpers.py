@@ -21,7 +21,7 @@ EventName = car.CarEvent.EventName
 
 
 def get_startup_event(car_recognized, controller_available, fw_seen):
-  event = EventName.customStartupAlert
+  event = None
 
   if not car_recognized:
     if fw_seen:

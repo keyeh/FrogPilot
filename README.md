@@ -9,6 +9,7 @@ RexPilot is my personal fork of the OpenPilot driver assistance system, designed
   - Left and right lane lines show what the driving model sees
   - LTA icon and barrier graphics indicate the lateral control status and steering override.
 - Removed obnoxious "Reverse Gear" message.
+- Removed annoying startup message.
 - Restored original boot logo
 
 **Planned features:**
