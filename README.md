@@ -4,7 +4,7 @@ RexPilot is my personal fork of the OpenPilot driver assistance system, designed
 
 **Enhancements:**
 
-- Screen stays off in standby mode and will only turn on for critical alerts.
+- Screen stays off while driving in standby mode, unless critical alerts happen or experimental mode is toggled.
 - Integration with Toyota and Lexus instrument clusters:
   - Left and right lane lines show what the driving model sees
   - LTA icon and barrier graphics indicate the lateral control status and steering override.

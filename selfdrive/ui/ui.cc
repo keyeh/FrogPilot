@@ -474,6 +474,8 @@ void UIState::updateStatus() {
   if (scene.started && sm->updated("controlsState")) {
     auto controls_state = (*sm)["controlsState"].getControlsState();
     auto state = controls_state.getState();
+    bool experimental_mode = controls_state.getExperimentalMode();
+
     if (state == cereal::ControlsState::OpenpilotState::PRE_ENABLED || state == cereal::ControlsState::OpenpilotState::OVERRIDING) {
       status = STATUS_OVERRIDE;
     } else if (scene.always_on_lateral_active) {
@@ -483,8 +485,10 @@ void UIState::updateStatus() {
     } else {
       status = scene.enabled ? STATUS_ENGAGED : STATUS_DISENGAGED;
     }
+    
+    scene.wake_up_screen = controls_state.getAlertStatus() != cereal::ControlsState::AlertStatus::NORMAL || previous_experimental_mode != experimental_mode;
 
-    scene.wake_up_screen = controls_state.getAlertStatus() != cereal::ControlsState::AlertStatus::NORMAL;
+    previous_experimental_mode = experimental_mode;
   }
 
   scene.started |= scene.force_onroad;
