@@ -1,6 +1,6 @@
 # RexPilot 🦖
 
-RexPilot is my personal fork of the OpenPilot driver assistance system with enhancements to reduce distractions and noise. Based on FrogPilot, it enables a quiet, screen-off driving experience, allowing drivers to use the instrument cluster instead, thanks to improved integration with Toyota and Lexus vehicles.
+RexPilot is my personal fork of the OpenPilot driver assistance system with enhancements to reduce distractions and noise. Based on FrogPilot, it enables a quiet, screen-off driving experience, allowing drivers to use the instrument cluster instead.
 
 **Enhancements:**
 
