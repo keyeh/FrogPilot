@@ -497,8 +497,7 @@ void UIState::updateStatus() {
       status = scene.enabled ? STATUS_ENGAGED : STATUS_DISENGAGED;
     }
     
-    scene.wake_up_screen = controls_state.getAlertStatus() != cereal::ControlsState::AlertStatus::NORMAL || previous_experimental_mode != experimental_mode;
-    previous_experimental_mode = experimental_mode;
+    scene.wake_up_screen = controls_state.getAlertStatus() != cereal::ControlsState::AlertStatus::NORMAL || experimental_mode;
   }
 
   scene.started |= scene.force_onroad;

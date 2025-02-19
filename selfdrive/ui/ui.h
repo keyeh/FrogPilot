@@ -302,7 +302,6 @@ public:
 
   UIStatus status;
   UIScene scene = {};
-  bool previous_experimental_mode = false;
 
   QString language;
 
